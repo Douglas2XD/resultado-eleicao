@@ -12,10 +12,10 @@ RUN apt-get update && apt-get install -y \
 # Instala o Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Define diretório de trabalho
-WORKDIR /var/www
+# Define diretório de trabalho correto
+WORKDIR /var/www/Eleicao
 
-# Copia os arquivos da aplicação
+# Copia todos os arquivos do projeto
 COPY . .
 
 # Instala dependências do Laravel
