@@ -12,7 +12,7 @@ services:
     networks:
       - laravel
     depends_on:
-      - mysql
+      - postgres
 
   web:
     image: nginx:alpine
@@ -26,25 +26,24 @@ services:
       - app
     networks:
       - laravel
-#.
-  mysql:
-    image: mysql:8.0
-    container_name: mysql_db
+
+  postgres:
+    image: postgres:15
+    container_name: postgres_db
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: laravel
-      MYSQL_USER: laravel
-      MYSQL_PASSWORD: laravel
+      POSTGRES_DB: laravel
+      POSTGRES_USER: laravel
+      POSTGRES_PASSWORD: laravel
     ports:
-      - "3306:3306"
+      - "5432:5432"
     volumes:
-      - dbdata:/var/lib/mysql
+      - pgdata:/var/lib/postgresql/data
     networks:
       - laravel
 
 volumes:
-  dbdata:
+  pgdata:
 
 networks:
   laravel:
