@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Elegivel;
+use Illuminate\Support\Facades\Http;
 
 class EleicaoController extends Controller
 {
@@ -12,17 +13,35 @@ class EleicaoController extends Controller
         return "Olá, bem vindo à eleição do IFRN!";
     }
 
-    public function verResultado($idEleicao)
+    public function verResultado(int $idEleicao)
     {
-        $vencedor = $this->calcularResultado($idEleicao);
-        
-        if (!$vencedor) {
-            return response()->json(['mensagem' => 'Eleição não encontrada ou sem candidatos'], 404);
+        $response = Http::get('http://13.221.77.151:8000/votos?id_eleicao='.$idEleicao);
+
+        if ($response->failed()) {
+            return response()->json(['mensagem' => 'Erro ao buscar votos'], 500);
         }
 
+        $votos = $response->json();
+
+        if (empty($votos)) {
+            return response()->json(['mensagem' => 'Nenhum voto encontrado'], 404);
+        }
+
+        // Conta os votos por candidato
+        $contagem = [];
+        foreach ($votos as $voto) {
+            $id = $voto['id_candidato'];
+            $contagem[$id] = ($contagem[$id] ?? 0) + 1;
+        }
+
+        arsort($contagem);
+        $idVencedor = array_key_first($contagem);
+        $totalVotos = $contagem[$idVencedor];
+
         return response()->json([
-            'mensagem' => 'Resultado da eleição #'.$idEleicao,
-            'vencedor' => $vencedor
+            'mensagem' => 'Vencedor da eleição',
+            'id_candidato' => $idVencedor,
+            'total_votos' => $totalVotos
         ]);
     }
     
