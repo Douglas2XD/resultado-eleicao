@@ -13,10 +13,9 @@ class EleicaoController extends Controller
         return "Olá, bem vindo à eleição do IFRN!";
     }
 
-    public function verResultado(int $idEleicao)
-    {
-        $response = Http::get('http://13.221.77.151:8000/votos?id_eleicao='.$idEleicao);
-
+    public function verResultado(int $idEleicao){
+        $response = Http::get('http://13.221.77.151:8000/votos?id_eleicao=' . $idEleicao);
+        
         if ($response->failed()) {
             return response()->json(['mensagem' => 'Erro ao buscar votos'], 500);
         }
@@ -27,7 +26,7 @@ class EleicaoController extends Controller
             return response()->json(['mensagem' => 'Nenhum voto encontrado'], 404);
         }
 
-        // Conta os votos por candidato
+        
         $contagem = [];
         foreach ($votos as $voto) {
             $id = $voto['id_candidato'];
@@ -35,15 +34,21 @@ class EleicaoController extends Controller
         }
 
         arsort($contagem);
-        $idVencedor = array_key_first($contagem);
-        $totalVotos = $contagem[$idVencedor];
+        
+        $concorrentes = [];
+        foreach ($contagem as $idCandidato => $totalVotos) {
+            $concorrentes[] = [
+                'id_candidato' => $idCandidato,
+                'total_votos' => $totalVotos,
+            ];
+        }
 
         return response()->json([
-            'mensagem' => 'Vencedor da eleição',
-            'id_candidato' => $idVencedor,
-            'total_votos' => $totalVotos
+            'mensagem' => 'Resultado da eleição',
+            'concorrentes' => $concorrentes,
         ]);
     }
+
     
     private function calcularResultadoSegundoTurno($candidato1, $candidato2)
     {
